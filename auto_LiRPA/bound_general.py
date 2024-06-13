@@ -1024,7 +1024,7 @@ class BoundedModule(nn.Module):
         sparse_intermediate_bounds = (self.bound_opts.get(
             'sparse_intermediate_bounds', False)
             and isinstance(self[node.output_name[0]], BoundRelu))
-
+        # sparse_intermediate_bounds = False
         ref_intermediate_lb, ref_intermediate_ub = None, None
         if sparse_intermediate_bounds:
             if node.name not in self.aux_reference_bounds:

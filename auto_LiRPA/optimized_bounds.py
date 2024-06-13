@@ -504,6 +504,7 @@ def _get_optimized_bounds(
                         ret[0],
                     ),
                     ret[1],
+                    ret[2] if return_A else None,
                 )
             if ret[1] is not None:
                 ret = (
@@ -513,6 +514,7 @@ def _get_optimized_bounds(
                         torch.full_like(ret[1], float('-inf')),
                         ret[1],
                     ),
+                    ret[2] if return_A else None,
                 )
         ret_l, ret_u = ret[0], ret[1]
 
@@ -750,6 +752,7 @@ def _get_optimized_bounds(
     if verbosity > 3:
         breakpoint()
 
+    self.infeasible_bounds = None
     if keep_best:
         # Set all variables to their saved best values.
         with torch.no_grad():

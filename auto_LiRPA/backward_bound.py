@@ -430,10 +430,16 @@ def backward_general(
     if torch.any(self.infeasible_bounds):
         if lb is not None:
             assert lb.size(0) == self.infeasible_bounds.size(0)
-            lb = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(float('inf'), device=lb.device), lb)
+            if len(lb.shape) == 2:
+                lb = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(float('inf'), device=lb.device), lb)
+            else:
+                lb = torch.where(self.infeasible_bounds.unsqueeze(1).unsqueeze(1).repeat((1, 1, lb.shape[-1])), torch.full_like(lb, float('inf')), lb)
         if ub is not None:
             assert ub.size(0) == self.infeasible_bounds.size(0)
-            ub = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(float('-inf'), device=ub.device), ub)
+            if len(ub.shape) == 2:
+                ub = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(float('inf'), device=ub.device), ub)
+            else:
+                ub = torch.where(self.infeasible_bounds.unsqueeze(1).unsqueeze(1).repeat((1, 1, lb.shape[-1])), torch.full_like(ub, float('-inf')), ub)
 
     if self.return_A:
         return lb, ub, self.A_dict
