@@ -492,6 +492,11 @@ def _get_optimized_bounds(
                 update_mask=pruner.preserve_mask if pruner else None,
                 cache_bounds=len(apply_output_constraints_to) > 0,
             )
+        
+        if torch.isnan(ret[0]).any():
+            print("ret[0] ", ret[0])
+            raise ValueError("NaN detected, consider reducing lr")
+            
         # If output constraints are used, it's possible that no inputs satisfy them.
         # If one of the layer that uses output constraints realizes this, it sets
         # self.infeasible_bounds = True for this element in the batch.
