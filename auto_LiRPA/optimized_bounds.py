@@ -31,6 +31,8 @@ if TYPE_CHECKING:
     from .bound_general import BoundedModule
 
 
+torch.set_printoptions(threshold=100000)
+
 default_optimize_bound_args = {
     'enable_alpha_crown': True,  # Enable optimization of alpha.
     'enable_beta_crown': False,  # Enable beta split constraint.
@@ -493,6 +495,8 @@ def _get_optimized_bounds(
                 cache_bounds=len(apply_output_constraints_to) > 0,
             )
         
+        print(f"iteration {i}: infeasible count is {self.infeasible_bounds.sum()}")
+
         if torch.isnan(ret[0]).any():
             print("ret[0] ", ret[0])
             raise ValueError("NaN detected, consider reducing lr")
@@ -505,7 +509,8 @@ def _get_optimized_bounds(
                 ret = (
                     torch.where(
                         self.infeasible_bounds.unsqueeze(1),
-                        torch.full_like(ret[0], float('inf')),
+                        # torch.full_like(ret[0], float('inf')),
+                        torch.full_like(ret[0], 10000000.0),
                         ret[0],
                     ),
                     ret[1],
@@ -516,7 +521,8 @@ def _get_optimized_bounds(
                     ret[0],
                     torch.where(
                         self.infeasible_bounds.unsqueeze(1),
-                        torch.full_like(ret[1], float('-inf')),
+                        # torch.full_like(ret[1], float('-inf')),
+                        torch.full_like(ret[1], -100000.0),
                         ret[1],
                     ),
                     ret[2] if return_A else None,
@@ -593,6 +599,12 @@ def _get_optimized_bounds(
         else:
             assert total_loss.shape == stop_criterion.shape
             loss = (total_loss * stop_criterion.logical_not()).sum()
+        
+        if torch.isnan(loss).any().item():
+            print("loss: ", loss)
+            print("total_loss: ", total_loss)
+            raise ValueError("NaN detected, consider reducing lr")
+            
 
         stop_criterion_final = isinstance(
             stop_criterion, torch.Tensor) and stop_criterion.all()
