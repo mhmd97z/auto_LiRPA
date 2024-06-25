@@ -62,6 +62,7 @@ reduction_sum = lambda x: x.sum(1, keepdim=True)
 reduction_mean = lambda x: x.mean(1, keepdim=True)
 reduction_max = lambda x: x.max(1, keepdim=True).values
 reduction_min = lambda x: x.min(1, keepdim=True).values
+reduction_top5 = lambda x: reduction_sum(x.topk(5, dim=1).values)
 
 MIN_HALF_FP = 5e-8  # 2**-24, which is the smallest value that float16 can be represented
 
@@ -76,6 +77,8 @@ def reduction_str2func(reduction_func):
             return reduction_sum
         elif reduction_func == 'mean':
             return reduction_mean
+        elif reduction_func == 'top5':
+            return reduction_top5
         else:
             raise NotImplementedError(f'Unknown reduction_func {reduction_func}')
     else:

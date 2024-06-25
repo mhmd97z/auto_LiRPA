@@ -437,7 +437,7 @@ def backward_general(
             #    print("setting to inf")
             #    lb = torch.where(self.infeasible_bounds.unsqueeze(1).unsqueeze(1).repeat((1, 1, lb.shape[-1])), torch.full_like(lb, float('inf')), lb)
             # lb = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(float('inf'), device=lb.device), lb)
-            lb = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(1e7, device=lb.device), lb)
+            # lb = torch.where(self.infeasible_bounds.unsqueeze(1), torch.tensor(1e7, device=lb.device), lb)
         # if ub is not None:
         #     print("setting -inf")
         #     assert ub.size(0) == self.infeasible_bounds.size(0)
