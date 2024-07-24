@@ -496,10 +496,16 @@ def _get_optimized_bounds(
             )
         
         print(f"iteration {i}: infeasible count is {self.infeasible_bounds.sum()}")
-
-        if torch.isnan(ret[0]).any():
-            print("ret[0] ", ret[0])
-            raise ValueError("NaN detected, consider reducing lr")
+        
+        if ret[0] is not None:
+            if torch.isnan(ret[0]).any():
+                print("ret[0] ", ret[0])
+                raise ValueError("NaN detected, consider reducing lr")
+        
+        if ret[1] is not None:
+            if torch.isnan(ret[1]).any():
+                print("ret[0] ", ret[1])
+                raise ValueError("NaN detected, consider reducing lr")
             
         # If output constraints are used, it's possible that no inputs satisfy them.
         # If one of the layer that uses output constraints realizes this, it sets
