@@ -113,7 +113,7 @@ class BoundTwoPieceLinear(BoundOptimizableActivation):
             # unstable_idx may be a tensor (dense layer or conv layer
             # with shared alpha), or tuple of 3-d tensors (conv layer with
             # non-sharing alpha).
-            sparsity = float('inf') if unstable_idx is None else unstable_idx.size(0) if isinstance(unstable_idx, torch.Tensor) else unstable_idx[0].size(0)
+            sparsity = float('inf') # if unstable_idx is None else unstable_idx.size(0) if isinstance(unstable_idx, torch.Tensor) else unstable_idx[0].size(0)
             if sparsity <= minimum_sparsity * size_s and self.use_sparse_spec_alpha:
                 # For fully connected layer, or conv layer with shared alpha per channel.
                 # shape is (2, sparse_spec, batch, this_layer_shape)

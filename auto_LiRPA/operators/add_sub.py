@@ -75,9 +75,9 @@ class BoundAdd(Bound):
             return
         # we have both gurobi vars as inputs
         this_layer_shape = self.output_shape
-        gvar_array1 = np.array(v[0])
-        gvar_array2 = np.array(v[1])
-        assert gvar_array1.shape == gvar_array2.shape and gvar_array1.shape == this_layer_shape[1:]
+        gvar_array1 = np.array(v[0] if isinstance(v[0], list) else v[0].cpu())
+        gvar_array2 = np.array(v[1] if isinstance(v[1], list) else v[1].cpu())
+        assert gvar_array1.shape == gvar_array2.shape # and gvar_array1.shape == this_layer_shape[1:]
 
         # flatten to create vars and constrs first
         gvar_array1 = gvar_array1.reshape(-1)

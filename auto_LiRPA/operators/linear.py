@@ -773,7 +773,10 @@ class BoundLinear(BoundOptimizableActivation):
         pre_layer_shape = gvars_array.shape
         # this layer shape (100,)
         # if last layer, this layer shape (9,) instead of (10,)!!!
-        this_layer_shape = self.lower.squeeze(0).shape
+        if self.lower is not None:
+            this_layer_shape = self.lower.squeeze(0).shape
+        else:
+            this_layer_shape = [self.inputs[1].output_shape[1]]
         out_lbs = self.lower.squeeze(0).detach().cpu().numpy() if self.lower is not None else None
         out_ubs = self.upper.squeeze(0).detach().cpu().numpy() if self.upper is not None else None
 
@@ -825,7 +828,7 @@ class BoundLinear(BoundOptimizableActivation):
             coeffs = this_layer_weight[neuron_idx, :]
 
             if solver_pkg == 'gurobi':
-                lin_expr += grb.LinExpr(coeffs, v[0])
+                lin_expr += grb.LinExpr(coeffs, gvars_array.flatten().tolist())
             else:
                 # FIXME (01/12/22): This is slow, must be fixed using addRow() or similar.
                 for i in range(len(coeffs)):
