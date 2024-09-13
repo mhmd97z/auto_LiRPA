@@ -105,10 +105,8 @@ class BoundConcat(Bound):
 
     def build_solver(self, *v, model, C=None, model_type="mip", solver_pkg="gurobi"):
         import numpy as np
-        v = [(np.array(item, dtype=object)) for item in v]
-        self.input_size = [item.shape[self.axis] for item in v]
-        self.axis = self.make_axis_non_negative(self.axis)
-        self.solver_vars = np.concatenate(v, axis=int(self.axis)).tolist()
+        v = [(np.array(item, dtype=object)).flatten() for item in v]
+        self.solver_vars = np.concatenate(v, axis=0).tolist()
 
     def build_gradient_node(self, grad_upstream):
         ret = []
@@ -174,12 +172,9 @@ class BoundSlice(Bound):
 
     def build_solver(self, *v, model, C=None, model_type="mip", solver_pkg="gurobi"):
         import numpy as np
-        x, start, end, axes, _ = v[0], v[1], v[2], v[3]-1, v[4]
-        array = np.array(x, dtype=object)
-        slices = [slice(None)] * array.ndim
-        slices[axes] = slice(start, end)
-        sliced_array = array[tuple(slices)]
-        self.solver_vars = sliced_array.flatten().tolist()
+        x, start, end = v[0], v[1], v[2]
+        array = np.array(x, dtype=object).flatten()
+        self.solver_vars = array[start:end].tolist()
 
     def bound_backward(self, last_lA, last_uA, *x, **kwargs):
         def _bound_oneside(A, start, end, axes, steps):
