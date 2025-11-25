@@ -494,9 +494,9 @@ def _get_optimized_bounds(
                 update_mask=pruner.preserve_mask if pruner else None,
                 cache_bounds=len(apply_output_constraints_to) > 0,
             )
-        
-        print(f"iteration {i}: infeasible count is {self.infeasible_bounds.sum()}")
-        
+
+        # print(f"iteration {i}: infeasible count is {self.infeasible_bounds.sum()}")
+
         if ret[0] is not None:
             if torch.isnan(ret[0]).any():
                 print("ret[0] ", ret[0])
