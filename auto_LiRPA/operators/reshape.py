@@ -121,6 +121,8 @@ class BoundUnsqueeze(Bound):
             self.axes = None
 
     def forward(self, *x):
+        if len(x) == 1 and len(x[0]) == 2:
+            x = x[0]
         data = x[0]
         if self.axes is not None:
             axes = self.axes
@@ -165,7 +167,7 @@ class BoundUnsqueeze(Bound):
         return LinearBound(lw, lb, uw, ub)
 
     def build_solver(self, *v, model, C=None, model_type="mip", solver_pkg="gurobi"):
-        self.solver_vars = self.forward(v[0])
+        self.solver_vars = self.forward(v)
 
 
 class BoundSqueeze(Bound):

@@ -104,7 +104,9 @@ class BoundConcat(Bound):
         return LinearBound(lw, lb, uw, ub)
 
     def build_solver(self, *v, model, C=None, model_type="mip", solver_pkg="gurobi"):
-        self.solver_vars = self.forward(*v)
+        import numpy as np
+        v = [(np.array(item, dtype=object)).flatten() for item in v]
+        self.solver_vars = np.concatenate(v, axis=0).tolist()
 
     def build_gradient_node(self, grad_upstream):
         ret = []
@@ -169,7 +171,10 @@ class BoundSlice(Bound):
         return Interval.make_interval(self.forward(*lb), self.forward(*ub))
 
     def build_solver(self, *v, model, C=None, model_type="mip", solver_pkg="gurobi"):
-        self.solver_vars = self.forward(*v)
+        import numpy as np
+        x, start, end = v[0], v[1], v[2]
+        array = np.array(x, dtype=object).flatten()
+        self.solver_vars = array[start:end].tolist()
 
     def bound_backward(self, last_lA, last_uA, *x, **kwargs):
         def _bound_oneside(A, start, end, axes, steps):

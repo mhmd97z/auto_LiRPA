@@ -31,6 +31,8 @@ if TYPE_CHECKING:
     from .bound_general import BoundedModule
 
 
+torch.set_printoptions(threshold=100000)
+
 default_optimize_bound_args = {
     'enable_alpha_crown': True,  # Enable optimization of alpha.
     'enable_beta_crown': False,  # Enable beta split constraint.
@@ -492,6 +494,19 @@ def _get_optimized_bounds(
                 update_mask=pruner.preserve_mask if pruner else None,
                 cache_bounds=len(apply_output_constraints_to) > 0,
             )
+
+        # print(f"iteration {i}: infeasible count is {self.infeasible_bounds.sum()}")
+
+        if ret[0] is not None:
+            if torch.isnan(ret[0]).any():
+                print("ret[0] ", ret[0])
+                raise ValueError("NaN detected, consider reducing lr")
+        
+        if ret[1] is not None:
+            if torch.isnan(ret[1]).any():
+                print("ret[0] ", ret[1])
+                raise ValueError("NaN detected, consider reducing lr")
+            
         # If output constraints are used, it's possible that no inputs satisfy them.
         # If one of the layer that uses output constraints realizes this, it sets
         # self.infeasible_bounds = True for this element in the batch.
@@ -500,19 +515,23 @@ def _get_optimized_bounds(
                 ret = (
                     torch.where(
                         self.infeasible_bounds.unsqueeze(1),
-                        torch.full_like(ret[0], float('inf')),
+                        # torch.full_like(ret[0], float('inf')),
+                        torch.full_like(ret[0], 10000000.0),
                         ret[0],
                     ),
                     ret[1],
+                    ret[2] if return_A else None,
                 )
             if ret[1] is not None:
                 ret = (
                     ret[0],
                     torch.where(
                         self.infeasible_bounds.unsqueeze(1),
-                        torch.full_like(ret[1], float('-inf')),
+                        # torch.full_like(ret[1], float('-inf')),
+                        torch.full_like(ret[1], -100000.0),
                         ret[1],
                     ),
+                    ret[2] if return_A else None,
                 )
         ret_l, ret_u = ret[0], ret[1]
 
@@ -586,6 +605,12 @@ def _get_optimized_bounds(
         else:
             assert total_loss.shape == stop_criterion.shape
             loss = (total_loss * stop_criterion.logical_not()).sum()
+        
+        if torch.isnan(loss).any().item():
+            print("loss: ", loss)
+            print("total_loss: ", total_loss)
+            raise ValueError("NaN detected, consider reducing lr")
+            
 
         stop_criterion_final = isinstance(
             stop_criterion, torch.Tensor) and stop_criterion.all()
@@ -750,6 +775,7 @@ def _get_optimized_bounds(
     if verbosity > 3:
         breakpoint()
 
+    self.infeasible_bounds = None
     if keep_best:
         # Set all variables to their saved best values.
         with torch.no_grad():
